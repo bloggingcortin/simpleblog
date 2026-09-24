@@ -10,7 +10,9 @@ Platform blogging ringan berbasis **PHP murni + SQLite** — tanpa framework, ta
 - ✅ **Draft atau langsung publikasi**
 - ✅ **Komentar** (wajib login; komentar terhapus otomatis jika post/user dihapus)
 - ✅ **Tag/kategori** (isi kolom "Tag" pisahkan koma; otomatis jadi halaman tag `tag.php?slug=...` + awan tag di beranda)
-- ✅ **Upload gambar → otomatis dikonversi jadi file `.webp`** (maks 5MB, multi-file, nama acak; hasil ditambahkan sebagai markdown `![gambar](/uploads/nama.webp)` di isi post — bisa dipindah/dihapus manual)
+- ✅ **Upload gambar** (maks 5MB, multi-file, nama acak; hasil ditambahkan sebagai markdown `![gambar](/uploads/...)` di isi post)
+  - Kalau PHP punya ekstensi `gd` (dengan WebP): **otomatis dikonversi ke `.webp`** (kualitas 82)
+  - Kalau `gd` tidak ada: **fallback otomatis** — gambar disimpan apa adanya (jpg/png/gif/webp), blog tetap jalan
 - ✅ **Pencarian** (`/search.php` — cari judul & isi post yang terbit)
 - ✅ Kelola & hapus post milik sendiri
 - ✅ Flash message + validasi form
@@ -81,6 +83,6 @@ blog/
 
 ## Catatan
 
-- Upload gambar menggunakan GD + `imagewebp()` → konversi otomatis ke `.webp` dengan kualitas 82, nama file acak (aman dari path traversal).
+- Upload gambar: pakai GD + `imagewebp()` (konversi ke `.webp` kualitas 82) jika tersedia; kalau GD tidak ada, fallback menyimpan file asli dengan validasi MIME via `fileinfo`. Nama file acak (aman dari path traversal).
 - Pencarian aman dari LIKE-injection: karakter `%` dan `_` di-escape.
 - Markdown mini diimplementasi via regex sederhana — cukup untuk kebutuhan dasar blogging.

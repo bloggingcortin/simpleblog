@@ -74,7 +74,7 @@ ob_start();
     <label>Tag <span class="muted">(pisahkan dengan koma, mis: php, tutorial, web)</span>
         <input type="text" name="tags" value="<?= e($tagsInput) ?>" placeholder="php, tutorial">
     </label>
-    <label>Tambah Gambar <span class="muted">(otomatis dikonversi ke WebP, maks 5MB per file)</span>
+    <label>Tambah Gambar <span class="muted">(jpg/png/gif/webp, maks 5MB per file; otomatis jadi WebP kalau ekstensi GD tersedia)</span>
         <input type="file" name="images[]" multiple accept="image/*">
     </label>
     <p class="muted">Gambar yang diunggah akan ditambahkan di akhir isi post. Hapus baris <code>![gambar](...)</code> jika tidak mau dipakai.</p>

@@ -201,6 +201,7 @@ function handleImageUploads(array $files, string &$error): array
     if (!is_array($names)) {
         return [];
     }
+    $hasGd = function_exists('imagecreatefromstring') && function_exists('imagewebp');
     $count = count($names);
     for ($i = 0; $i < $count; $i++) {
         if (($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
@@ -216,19 +217,39 @@ function handleImageUploads(array $files, string &$error): array
         }
         $tmp = $files['tmp_name'][$i];
         $data = @file_get_contents($tmp);
-        $img = $data !== false ? @imagecreatefromstring($data) : false;
-        if (!$img) {
-            $error = 'File bukan gambar yang valid.';
+        if ($data === false) {
+            $error = 'Gagal membaca file upload.';
             continue;
         }
-        $name = bin2hex(random_bytes(8)) . '.webp';
-        if (!imagewebp($img, $dir . '/' . $name, 82)) {
-            $error = 'Konversi WebP gagal.';
+
+        if ($hasGd) {
+            $img = @imagecreatefromstring($data);
+            if (!$img) {
+                $error = 'File bukan gambar yang valid.';
+                continue;
+            }
+            $name = bin2hex(random_bytes(8)) . '.webp';
+            if (!imagewebp($img, $dir . '/' . $name, 82)) {
+                $error = 'Konversi WebP gagal.';
+                imagedestroy($img);
+                continue;
+            }
             imagedestroy($img);
-            continue;
+            $markdown[] = PHP_EOL . PHP_EOL . '![gambar](/uploads/' . $name . ')';
+        } else {
+            $mime = (finfo_buffer(finfo_open(FILEINFO_MIME_TYPE), $data) ?: '');
+            $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp'];
+            if (!isset($allowed[$mime])) {
+                $error = 'File bukan gambar yang valid.';
+                continue;
+            }
+            $name = bin2hex(random_bytes(8)) . '.' . $allowed[$mime];
+            if (@file_put_contents($dir . '/' . $name, $data) === false) {
+                $error = 'Gagal menyimpan gambar.';
+                continue;
+            }
+            $markdown[] = PHP_EOL . PHP_EOL . '![gambar](/uploads/' . $name . ')';
         }
-        imagedestroy($img);
-        $markdown[] = PHP_EOL . PHP_EOL . '![gambar](/uploads/' . $name . ')';
     }
     return $markdown;
 }
